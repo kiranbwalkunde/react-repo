@@ -1,0 +1,31 @@
+.cal-header {
+  border: 1px solid #e5e5e5;
+}
+
+.date-range-picker ul {
+  list-style-type: none;
+  border-right: 1px solid #e5e5e5;
+  border-left: 1px solid #e5e5e5;
+  border-bottom: 1px solid #e5e5e5; 
+}
+
+.date-range-picker ul li {
+  display: inline-block;
+  padding: 5px 7px;
+}
+
+/* Keeping this as 300px so that there
+will no issue in responsive as well as for Dates and Year Sizes. */
+.date-range-picker .calendar {
+  max-width: 300px;
+  min-width: 300px;
+}
+
+.date-range-picker ul.date-vals li {
+  padding: 5px 10px;
+}
+
+.date-range-picker ul.date-vals li.active {
+  border: 1px solid #737373;
+  border-radius: 25px;
+}
