@@ -258,7 +258,7 @@ class DateRangePicker extends Component {
     return(
       <div className="date-range-picker">
         <div className="row mx-0">
-          <div className="col-md-6 py-2">
+          <div className="col-md-5 py-2">
             <input
               type="textfield"
               value={startDate.stringValue}
@@ -277,7 +277,7 @@ class DateRangePicker extends Component {
                 date={startDate} />
             </div>
           </div>
-          <div className="col-md-6 py-2">
+          <div className="col-md-5 py-2">
             <input
               type="textfield"
               className="form-field w-100"
@@ -295,6 +295,11 @@ class DateRangePicker extends Component {
                 handleMonthSelection={(e) => this.handleMonthSelection(e, 'endDate')}
                 date={endDate} />
             </div>
+          </div>
+          <div className="col-md-2">
+            <button
+              role="button"
+              className="btn btn-primary text-center w-100">Submit</button>
           </div>
         </div>
       </div>

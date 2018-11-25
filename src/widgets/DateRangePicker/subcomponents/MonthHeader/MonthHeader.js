@@ -9,15 +9,16 @@ class MonthHeader extends Component {
 
   render() {
     const {props} = this;
-    const {month} = props;
+    const {month, year} = props;
     const months = ['January', 'February', 'March',
     'April', 'May', 'June', 'July', 'August',
     'September', 'October', 'November', 'December'];
+    const value = `${months[month]} - ${year}`;
     return(
       <div
         role="button"
         className="date-header">
-        {months[month]}
+        {value}
       </div>
     );
   }

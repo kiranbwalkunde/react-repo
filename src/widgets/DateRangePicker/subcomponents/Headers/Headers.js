@@ -19,6 +19,7 @@ class Headers extends Component {
       let elementToRender;
       switch(currentSelection) {
         case 0: elementToRender =  (<MonthHeader
+                  year={year}
                   month={month} />);
                   break;
         case 1: elementToRender = (<YearHeader

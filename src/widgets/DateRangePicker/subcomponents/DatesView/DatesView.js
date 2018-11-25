@@ -6,6 +6,8 @@
 import React, {Component} from 'react';
 import moment from 'moment';
 
+import Utils from '../../utils/Utils';
+
 class DatesView extends Component {
 
   render() {
@@ -20,7 +22,10 @@ class DatesView extends Component {
     // The Task is to show the previous months disabled dates
     // and next months few dates to complete the current month calendar.
     const isCurrentMonthAndYear = selectedValue.year() === year && selectedValue.month() === month;
-    const value = date -1;
+    const value = date - 1;
+    const previousAndNextRecords = Utils.getPreviousMonthsDates(createdDate);
+    console.log('The Previous and Next dates are: ', previousAndNextRecords);
+    const {previous, next} = previousAndNextRecords;
     return(
       <div className="dates">
         <ul className="weeks m-0 px-0">
@@ -30,15 +35,26 @@ class DatesView extends Component {
               key={['week', key].join('_')}>{item}</li>
           )}
         </ul>
+        {/* Render Past Months Dates. */}
         <ul className="date-vals m-0 px-0">
+          {previous.map((item, key) =>
+            <li
+              className="disabled rounded"
+              key={['previous', key].join('_')}>{item}</li>
+          )}
           {resultArray.map((item, key) =>
             <li
               role="button"
-              className={`${(key === value && isCurrentMonthAndYear) ? 'active' : ''} `}
+              className={`border border-success rounded ${(key === value && isCurrentMonthAndYear) ? 'active' : ''} `}
               onClick={() => handleDateSelection(key + 1)}
               key={[key, 'date-value'].join('_')}>
               {item + 1}
-            </li>  
+            </li>
+          )}
+          {next.map((item, key) =>
+            <li
+              className="disabled rounded"
+              key={['next', key].join('_')}>{item + 1}</li>
           )}
         </ul>
       </div>
