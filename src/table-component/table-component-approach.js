@@ -1,4 +1,4 @@
-var Table = function(domElement){
+var Table = function(domElement, properties){
 	
 	this.addHeaders = function(labels){
 		if (labels) {
@@ -7,6 +7,11 @@ var Table = function(domElement){
 			// Empty the Table Head.
 			tableHead.innerHTML = '';
 			var totalLength = labels.length;
+			if (this.addCheckboxes) {
+				var thElementLocal = document.createElement('th');
+				thElementLocal.innerHTML = 'Sr. No.';
+				tableHead.append(thElementLocal);
+			}
 			for (var index = 0; index < totalLength; index ++) {
 				var thElement = document.createElement('th');
 				thElement.innerHTML = labels[index];
@@ -26,9 +31,17 @@ var Table = function(domElement){
 					var tableRow = document.createElement('tr');
 					var dataRow = data[index];
 					var headLength = this.tableHeaders.length;
-					for (var innerIndex = 0; innerIndex < headLength; innerIndex ++) {
+					if (this.addCheckboxes) {
+						var localTdElement = document.createElement('td');
+						var checkBox = document.createElement('input');
+						checkBox.type = 'checkbox';
+						checkBox.name = 'checks';
+						localTdElement.append(checkBox);
+						tableRow.append(localTdElement);
+					}
+					for (var innerIndex = 0; innerIndex < headLength ; innerIndex ++) {
 						var tdElement = document.createElement('td');
-						console.log('The Data, Header Length and final value is ', dataRow, this.tableHeaders[innerIndex], dataRow[headLength[innerIndex]]);
+						// console.log('The Data, Header Length and final value is ', dataRow, this.tableHeaders[innerIndex], dataRow[headLength[innerIndex]]);
 						var value = dataRow[this.tableHeaders[innerIndex]];
 						tdElement.innerHTML = value ? value : '--';
 						tableRow.append(tdElement);
@@ -46,7 +59,13 @@ var Table = function(domElement){
 	
 	var currentDOMElement = domElement;
   var apiToCall = 'https://www.google.com';
-  this.currentTable = document.createElement('table');
+	var localProperties = properties ? properties : {};
+  // The Current Table pointer to point to the DOM element.
+	this.currentTable = document.createElement('table');
+	// The Class Name to add to the table.
+	this.currentTable.className = localProperties.className;
+	this.addCheckboxes = localProperties.addCheckboxes;
+	
 	// Create Head and Body.
 	this.currentTable.createTHead();
 	this.currentTable.createTBody();
@@ -54,7 +73,19 @@ var Table = function(domElement){
 	this.tableHeaders = ['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh'];
 	this.addHeaders(this.tableHeaders);
 	domElement.append(this.currentTable);
+	
+	// The Data that will be rendered to the table.
+	this.data = [];
+	
+	// The MSISDNS which are meant to be excluded from the list.
+	this.excludedMsisdn = [];
+	
 	this.callMe = function() {
 		console.log('Call Me Table ', this.currentTable);
+	}
+	// This method will set the data and will render all the elements within the same.
+	this.setData = function(propData){
+		this.data = propData;
+		this.renderBodyInTheTable(this.data);
 	}
 }
