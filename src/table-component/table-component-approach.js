@@ -9,7 +9,24 @@ var Table = function(domElement, properties){
 			var totalLength = labels.length;
 			if (this.addCheckboxes) {
 				var thElementLocal = document.createElement('th');
-				thElementLocal.innerHTML = 'Sr. No.';
+				var checkBox = document.createElement('input');
+				checkBox.type = 'checkbox';
+				checkBox.name = 'select-all';
+				thElementLocal.append(checkBox);
+				this.selectAllCheck = checkBox;
+				var currentObject = this;
+				checkBox.addEventListener('change', function(){
+					console.log('The Select All has been clicked. ', this);
+					var childElements = currentObject.getAllCheckboxes();
+					var length = childElements.length;
+					var isChecked = this.checked;
+					for (var index = 0; index < length; index ++) {
+						var item = childElements[index];
+						item.checked = isChecked;
+					}
+					var selectedLength = currentObject.getAllSelectedCheckboxes().length;
+					currentObject.setCurrentSelectedUsers(selectedLength);
+				});
 				tableHead.append(thElementLocal);
 			}
 			for (var index = 0; index < totalLength; index ++) {
@@ -20,6 +37,20 @@ var Table = function(domElement, properties){
 				tableHead.append(thElement);
 			}
 		}
+	}
+	
+	this.selectAllCheck = null;
+	
+	this.getAllCheckboxes = function(){
+		return this.currentTable.querySelectorAll('tbody tr > td:first-child > input[type="checkbox"]');
+	}
+	
+	this.setCurrentSelectedUsers = function(count){
+		this.currentTable.caption.innerHTML = 'Selected Users are ' + count;
+	}
+	
+	this.getAllSelectedCheckboxes = function(){
+		return this.currentTable.querySelectorAll('tbody tr > td:first-child > input[type="checkbox"]:checked');
 	}
 	
 	this.renderBodyInTheTable = function(data){
@@ -37,6 +68,21 @@ var Table = function(domElement, properties){
 						checkBox.type = 'checkbox';
 						checkBox.name = 'checks';
 						localTdElement.append(checkBox);
+						// Bind an event to update Select All and the same Checkbox.
+						var currentObject = this;
+						checkBox.addEventListener('change', function(){
+							if (!this.checked) {
+								// As this checkbox has been deselected, select all checkbox make it de-selected.
+								currentObject.selectAllCheck.checked = false;
+							}
+							// Update the User Count.
+							var allCheckboxes = currentObject.getAllCheckboxes();
+							var allCheckboxesSelected = currentObject.getAllSelectedCheckboxes();
+							if (allCheckboxes.length === allCheckboxesSelected.length) {
+								currentObject.selectAllCheck.checked = true;
+							}
+							currentObject.setCurrentSelectedUsers(allCheckboxesSelected.length);
+						});
 						tableRow.append(localTdElement);
 					}
 					for (var innerIndex = 0; innerIndex < headLength ; innerIndex ++) {
@@ -64,11 +110,14 @@ var Table = function(domElement, properties){
 	this.currentTable = document.createElement('table');
 	// The Class Name to add to the table.
 	this.currentTable.className = localProperties.className;
+	// PROP: To see if the current Table supports Select All functionality.
 	this.addCheckboxes = localProperties.addCheckboxes;
 	
 	// Create Head and Body.
 	this.currentTable.createTHead();
 	this.currentTable.createTBody();
+	// The Caption to show the information.
+	this.currentTable.createCaption();
 	// This function call will add the initial headers to the table.
 	this.tableHeaders = ['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh'];
 	this.addHeaders(this.tableHeaders);
