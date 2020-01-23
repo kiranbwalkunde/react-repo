@@ -26,20 +26,45 @@ var Table = function(domElement, properties){
 					}
 					var selectedLength = currentObject.getAllSelectedCheckboxes().length;
 					currentObject.setCurrentSelectedUsers(selectedLength);
+					if (selectedLength !== 0) {
+						currentObject.showRemoveButton();
+					} else {
+						currentObject.hideRemoveButton();
+					}
 				});
 				tableHead.append(thElementLocal);
-			}
-			for (var index = 0; index < totalLength; index ++) {
-				var thElement = document.createElement('th');
-				thElement.innerHTML = labels[index];
-				this.tableHeaders.push(labels[index].toLowerCase());
-				// Append the TH Element after the THead.
-				tableHead.append(thElement);
+				// Add Remove Button to delete the selected Items from the Table.
+				var secondBody = currentObject.currentTable.tBodies[1];
+				var rowElement = document.createElement('tr');
+				var tdElement = document.createElement('td');
+				tdElement.setAttribute('colspan', totalLength);
+				rowElement.append(tdElement);
+				var wrapperDiv = document.createElement('div');
+				var removeElementButton = document.createElement('button');
+				removeElementButton.className='btn btn-danger';
+				removeElementButton.type = 'button';
+				removeElementButton.innerHTML = 'Remove Selection';
+				wrapperDiv.append(removeElementButton);
+				wrapperDiv.className='text-center';
+				tdElement.append(wrapperDiv);
+				removeElementButton.style.display = 'none';
+				this.removeButtonReference = removeElementButton;
+				secondBody.append(rowElement);
+				this.removeButtonReference.addEventListener('click', this.removeSelectedItems);
+				for (var index = 0; index < totalLength; index ++) {
+					var thElement = document.createElement('th');
+					thElement.innerHTML = labels[index];
+					this.tableHeaders.push(labels[index].toLowerCase());
+					// Append the TH Element after the THead.
+					tableHead.append(thElement);
+				}
 			}
 		}
 	}
 	
-	this.selectAllCheck = null;
+	this.selectAllCheck = undefined;
+	
+	this.removeButtonReference = undefined;
 	
 	this.getAllCheckboxes = function(){
 		return this.currentTable.querySelectorAll('tbody tr > td:first-child > input[type="checkbox"]');
@@ -74,6 +99,8 @@ var Table = function(domElement, properties){
 							if (!this.checked) {
 								// As this checkbox has been deselected, select all checkbox make it de-selected.
 								currentObject.selectAllCheck.checked = false;
+							} else {
+								currentObject.showRemoveButton();
 							}
 							// Update the User Count.
 							var allCheckboxes = currentObject.getAllCheckboxes();
@@ -103,6 +130,42 @@ var Table = function(domElement, properties){
 		
 	}
 	
+	// This method will set the data and will render all the elements within the same.
+	this.setData = function(propData) {
+		this.data = propData;
+		this.renderBodyInTheTable(this.data);
+	}
+	
+	this.hideRemoveButton = function() {
+		this.removeButtonReference.style.display = 'none';
+	}
+	
+	this.showRemoveButton = function() {
+		this.removeButtonReference.style.display = 'block';
+	}
+	
+	this.updateChecksCount = function(){
+		this.setCurrentSelectedUsers(this.getAllSelectedCheckboxes().length);
+	}
+	
+	var removeSelected = function() {
+		var selectedItems = this.getAllSelectedCheckboxes();
+		var lengthOfSelected = selectedItems.length;
+		// Iterate over all the selected Checkboxes and delete the data items.
+		for (var index = 0; index < lengthOfSelected; index ++) {
+			var item = selectedItems[index];
+			console.log('The Remove button has been clicked. ');
+			// This is mostly compatible to all the browsers.
+			item.parentElement.parentElement.remove();
+		}
+		this.updateChecksCount();
+		this.hideRemoveButton();
+		// As we are deleting the record, the select all should get unchecked.
+		this.selectAllCheck.checked = false;
+	}
+	
+	this.removeSelectedItems = removeSelected.bind(this);
+	
 	var currentDOMElement = domElement;
   var apiToCall = 'https://www.google.com';
 	var localProperties = properties ? properties : {};
@@ -115,7 +178,12 @@ var Table = function(domElement, properties){
 	
 	// Create Head and Body.
 	this.currentTable.createTHead();
+	// This is the body for the actual elements to render.
 	this.currentTable.createTBody();
+	
+	// This is the body to render the Action Buttons in that.
+	this.currentTable.createTBody();
+	
 	// The Caption to show the information.
 	this.currentTable.createCaption();
 	// This function call will add the initial headers to the table.
@@ -131,10 +199,5 @@ var Table = function(domElement, properties){
 	
 	this.callMe = function() {
 		console.log('Call Me Table ', this.currentTable);
-	}
-	// This method will set the data and will render all the elements within the same.
-	this.setData = function(propData){
-		this.data = propData;
-		this.renderBodyInTheTable(this.data);
 	}
 }
