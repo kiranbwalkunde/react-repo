@@ -7,7 +7,7 @@ var Table = function (domElement, properties) {
 			var checkBox = document.createElement('input');
 			checkBox.type = 'checkbox';
 			checkBox.name = 'select-all';
-			thElementLocal.append(checkBox);
+			thElementLocal.appendChild(checkBox);
 			currentObject.selectAllCheck = checkBox;
 			checkBox.addEventListener('change', function () {
 				console.log('The Select All has been clicked. ', this);
@@ -26,25 +26,25 @@ var Table = function (domElement, properties) {
 					currentObject.hideRemoveButton();
 				}
 			});
-			tableHead.append(thElementLocal);
+			tableHead.appendChild(thElementLocal);
 			// Add Remove Button to delete the selected Items from the Table.
 			var secondBody = currentObject.currentTable.tBodies[1];
 			var rowElement = document.createElement('tr');
 			var tdElement = document.createElement('td');
 			tdElement.setAttribute('colspan', currentObject.tableHeaders.length);
-			rowElement.append(tdElement);
+			rowElement.appendChild(tdElement);
 			var wrapperDiv = document.createElement('div');
 			wrapperDiv.className = 'd-flex';
 			var removeElementButton = document.createElement('button');
 			removeElementButton.className = 'btn btn-danger';
 			removeElementButton.type = 'button';
 			removeElementButton.innerHTML = 'Remove Selection';
-			wrapperDiv.append(removeElementButton);
+			wrapperDiv.appendChild(removeElementButton);
 			wrapperDiv.className = 'text-center';
-			tdElement.append(wrapperDiv);
+			tdElement.appendChild(wrapperDiv);
 			removeElementButton.style.display = 'none';
 			currentObject.removeButtonReference = removeElementButton;
-			secondBody.append(rowElement);
+			secondBody.appendChild(rowElement);
 			currentObject.removeButtonReference.addEventListener('click', currentObject.removeSelectedItems);
 		}
 	}
@@ -65,8 +65,8 @@ var Table = function (domElement, properties) {
 				thElement.addEventListener('click', this.arrangeRowsPerHeader);
 				// this.tableHeaders.push(thElement.header);
 				// Append the TH Element after the THead.
-				tableHead.append(thElement);
-				console.log('The Element has been bound with an event ', thElement);
+				tableHead.appendChild(thElement);
+				console.debug('The Element has been bound with an event ', thElement);
 			}
 		}
 	}
@@ -87,10 +87,12 @@ var Table = function (domElement, properties) {
 		return this.currentTable.querySelectorAll('tbody tr > td:first-child > input[type="checkbox"]:checked');
 	}
 
-	this.renderBodyInTheTable = function (data) {
+	this.renderBodyInTheTable = function (data, append) {
 		if (data) {
 			// Empty the current body.
-			this.currentTable.tBodies[0].innerHTML = '';
+			if (!append) {
+				this.currentTable.tBodies[0].innerHTML = '';
+			}
 			var totalLength = data.length;
 			for (var index = 0; index < totalLength; index++) {
 				var tableRow = document.createElement('tr');
@@ -104,7 +106,10 @@ var Table = function (domElement, properties) {
 					var checkBox = document.createElement('input');
 					checkBox.type = 'checkbox';
 					checkBox.name = 'checks';
-					localTdElement.append(checkBox);
+					localTdElement.appendChild(checkBox);
+					if (this.excludedMsisdn.indexOf(dataRow.msisdn) !== -1) {
+						checkBox.checked = true;
+					}
 					// Bind an event to update Select All and the same Checkbox.
 					var currentObject = this;
 					checkBox.addEventListener('change', function () {
@@ -122,7 +127,7 @@ var Table = function (domElement, properties) {
 						}
 						currentObject.setCurrentSelectedUsers(allCheckboxesSelected.length);
 					});
-					tableRow.append(localTdElement);
+					tableRow.appendChild(localTdElement);
 				}
 				for (var innerIndex = 0; innerIndex < headLength; innerIndex++) {
 					var tdElement = document.createElement('td');
@@ -131,10 +136,10 @@ var Table = function (domElement, properties) {
 					var indexItem = dataItem ? dataItem.toString().toLowerCase() : ''; 
 					var value = dataRow[indexItem];
 					tdElement.innerHTML = value ? value : '--';
-					tableRow.append(tdElement);
+					tableRow.appendChild(tdElement);
 				}
 				// Lets iterate over the headers and append the data in the table.
-				this.currentTable.tBodies[0].append(tableRow);
+				this.currentTable.tBodies[0].appendChild(tableRow);
 			}
 		}
 	}
@@ -178,6 +183,25 @@ var Table = function (domElement, properties) {
 		this.selectAllCheck.checked = false;
 	}
 
+	// This method will iterate over each of the row and will update the checkbox.
+	function refreshTable() {
+		var currentTable = this.currentTable.tBodies[0];
+		var childElements = currentTable.children;
+		var totalLength = childElements.length;
+		for (var index = 0; index < totalLength; index ++) {
+			var item = childElements[index];
+			var itemData = item.data;
+			if (this.excludedMsisdn.indexOf(itemData.msisdn) !== -1) {
+				var inputItem = item.querySelector('input[type="checkbox"]');
+				if (inputItem) {
+					inputItem.checked = true;
+				}
+			}
+		}
+	}
+
+	this.refreshTable = refreshTable.bind(this);
+
 	this.removeSelectedItems = removeSelected.bind(this);
 
 	var getDataToCompare = function (headerValue) {
@@ -220,20 +244,36 @@ var Table = function (domElement, properties) {
 				classToAdd: 'bg-danger'
 			};
 		}
-		var ascFunction = function (first, second) { return first.valueToCompare > second.valueToCompare };
-		var descFunction = function (first, second) { return first.valueToCompare < second.valueToCompare };
+		var ascFunction = function (first, second) {
+			if (first.valueToCompare > second.valueToCompare) {
+				return 1;
+			} else if (first.valueToCompare < second.valueToCompare) {
+				return -1;
+			}
+			return 0;
+		};
+		var descFunction = function (first, second) {
+			if (first.valueToCompare > second.valueToCompare) {
+				return -1;
+			} else if (first.valueToCompare < second.valueToCompare) {
+				return 1;
+			}
+			return 0;
+		};
 		if (sortedOrder.order === 'ASC') {
 			resultArray.sort(ascFunction);
 		} else {
 			resultArray.sort(descFunction);
 		}
 		console.log('The Sorted Result is ', resultArray);
+		// alert('The Sorted Array is ' + JSON.stringify(result));
 		var totalLength = resultArray.length;
 		var tableBody = this.currentTable.tBodies[0];
 		for (var index = 0; index < totalLength; index++) {
 			var currentItem = resultArray[index];
 			if (index !== (currentItem.index + 1)) {
 				tableBody.insertBefore(currentItem.actualElement, tableBody.children[index]);
+				// alert('Moving' + index + ' to ' + currentItem.index);
 			}
 		}
 		var headElements = this.tableHead.children;
@@ -274,7 +314,7 @@ var Table = function (domElement, properties) {
 	// This function call will add the initial headers to the table.
 	this.tableHeaders = properties.headers ? properties.headers : ['First', 'Second', 'Third', 'Fourth'];
 	this.addHeaders();
-	domElement.append(this.currentTable);
+	domElement.appendChild(this.currentTable);
 
 	// The Data that will be rendered to the table.
 	this.data = [];
