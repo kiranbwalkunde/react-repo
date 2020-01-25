@@ -175,7 +175,13 @@ var Table = function (domElement, properties) {
 			var item = selectedItems[index];
 			console.log('The Remove button has been clicked. ');
 			// This is mostly compatible to all the browsers.
-			item.parentElement.parentElement.remove();
+			var parentElement = item.parentElement.parentElement;
+			// alert('The Parent Element is ' + parentElement);
+			if (parentElement.removeNode) {
+				parentElement.removeNode(true);
+			} else {
+				parentElement.remove && parentElement.remove();
+			}
 		}
 		this.updateChecksCount();
 		this.hideRemoveButton();
@@ -184,7 +190,7 @@ var Table = function (domElement, properties) {
 	}
 
 	// This method will iterate over each of the row and will update the checkbox.
-	function refreshTable() {
+	function refreshTableExcludes() {
 		var currentTable = this.currentTable.tBodies[0];
 		var childElements = currentTable.children;
 		var totalLength = childElements.length;
@@ -195,12 +201,28 @@ var Table = function (domElement, properties) {
 				var inputItem = item.querySelector('input[type="checkbox"]');
 				if (inputItem) {
 					inputItem.checked = true;
+					this.showRemoveButton();
+					this.setCurrentSelectedUsers(this.getAllSelectedCheckboxes().length);
 				}
 			}
 		}
 	}
 
-	this.refreshTable = refreshTable.bind(this);
+	this.refreshTableExcludes = refreshTableExcludes.bind(this);
+
+	function refreshUpdatedData() {
+		var dataToPush = [];
+		var dataToRemove = [];
+		var tableBody = this.currentTable.tBodies[0];
+		var childElements = tableBody.children;
+		var childLength = childElements.length;
+		for (var index = 0; index < childLength; index ++) {
+			var childItem = childElements[index];
+
+		}
+	}
+
+	this.refreshUpdatedData = refreshUpdatedData.bind(this);
 
 	this.removeSelectedItems = removeSelected.bind(this);
 
