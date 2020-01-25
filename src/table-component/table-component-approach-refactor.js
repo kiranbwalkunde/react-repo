@@ -95,10 +95,13 @@ var Table = function (domElement, properties) {
 			}
 			var totalLength = data.length;
 			for (var index = 0; index < totalLength; index++) {
-				var tableRow = document.createElement('tr');
-				var dataRow = data[index];
-				this.data.push(dataRow);
-				// Using the data row to compare the respective values.
+				this.addRowToTable(data[index]);	
+			}
+		}
+	}
+
+	function addRowToTable(dataRow) {
+		var tableRow = document.createElement('tr');
 				tableRow.data = dataRow;
 				var headLength = this.tableHeaders.length;
 				if (this.addCheckboxes) {
@@ -116,6 +119,11 @@ var Table = function (domElement, properties) {
 						if (!this.checked) {
 							// As this checkbox has been deselected, select all checkbox make it de-selected.
 							currentObject.selectAllCheck.checked = false;
+							if (currentObject.getAllSelectedCheckboxes().length !== 0) {
+								currentObject.showRemoveButton();
+							} else {
+								currentObject.hideRemoveButton();
+							}
 						} else {
 							currentObject.showRemoveButton();
 						}
@@ -140,9 +148,9 @@ var Table = function (domElement, properties) {
 				}
 				// Lets iterate over the headers and append the data in the table.
 				this.currentTable.tBodies[0].appendChild(tableRow);
-			}
-		}
 	}
+
+	this.addRowToTable = addRowToTable.bind(this);
 
 	// The Methods to exclude the MSISDNs from the table being shown.
 	this.addMsisdnToExclude = function (msisdns) {
@@ -173,6 +181,8 @@ var Table = function (domElement, properties) {
 		// Iterate over all the selected Checkboxes and delete the data items.
 		for (var index = 0; index < lengthOfSelected; index++) {
 			var item = selectedItems[index];
+			// Delete the data also.
+			this.data.splice(item.index, 1);
 			console.log('The Remove button has been clicked. ');
 			// This is mostly compatible to all the browsers.
 			var parentElement = item.parentElement.parentElement;
@@ -211,14 +221,21 @@ var Table = function (domElement, properties) {
 	this.refreshTableExcludes = refreshTableExcludes.bind(this);
 
 	function refreshUpdatedData() {
-		var dataToPush = [];
-		var dataToRemove = [];
+		var enteredData = [];
 		var tableBody = this.currentTable.tBodies[0];
 		var childElements = tableBody.children;
 		var childLength = childElements.length;
 		for (var index = 0; index < childLength; index ++) {
 			var childItem = childElements[index];
-
+			enteredData.push(childItem.data);
+		}
+		// Iterate over current data to see if there is any record new or not.
+		var currentDataLength = this.data.length;
+		for (var innerIndex = 0; innerIndex < currentDataLength; innerIndex ++) {
+			var dataItem = this.data[innerIndex];
+			if (enteredData.indexOf(dataItem) === -1) {
+				this.addRowToTable(dataItem);
+			}
 		}
 	}
 
