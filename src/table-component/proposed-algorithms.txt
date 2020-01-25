@@ -4,8 +4,8 @@
 temp0.parentElement.insertBefore(temp1, temp0) --> Moves temp1 before temp0.
  	
 Below is the proposed solution for the Compare function:
-1. Iterate over each of the table row to get the array as [{rowIndex, valueToSort.}];
-2. Sort these object array.
-3. Once sorted, then we have to re-arrange the TR elements based on this values, the header values must contain META to compare the elements and should be specific to header values.
-4. Add the functionality for the Excluded MSISDNs.
-5. Get Selected MSISDNs.
+1. Iterate over each of the table row to get the array as [{rowIndex, valueToSort.}]; --> Done.
+2. Sort these object array. --> Done.
+3. Once sorted, then we have to re-arrange the TR elements based on this values, the header values must contain META to compare the elements and should be specific to header values. --> Done.
+4. Add the functionality for the Excluded MSISDNs. --> Done.
+5. Get Selected MSISDNs. --> In Progress

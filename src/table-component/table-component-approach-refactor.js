@@ -10,7 +10,7 @@ var Table = function (domElement, properties) {
 			thElementLocal.appendChild(checkBox);
 			currentObject.selectAllCheck = checkBox;
 			checkBox.addEventListener('change', function () {
-				console.log('The Select All has been clicked. ', this);
+				console.debug('The Select All has been clicked. ', this);
 				var childElements = currentObject.getAllCheckboxes();
 				var length = childElements.length;
 				var isChecked = this.checked;
@@ -183,15 +183,11 @@ var Table = function (domElement, properties) {
 			var item = selectedItems[index];
 			// Delete the data also.
 			this.data.splice(item.index, 1);
-			console.log('The Remove button has been clicked. ');
+			console.debug('The Remove button has been clicked. ');
 			// This is mostly compatible to all the browsers.
 			var parentElement = item.parentElement.parentElement;
 			// alert('The Parent Element is ' + parentElement);
-			if (parentElement.removeNode) {
-				parentElement.removeNode(true);
-			} else {
-				parentElement.remove && parentElement.remove();
-			}
+			this.removeRowFromTable(parentElement);
 		}
 		this.updateChecksCount();
 		this.hideRemoveButton();
@@ -218,16 +214,75 @@ var Table = function (domElement, properties) {
 		}
 	}
 
+	function getSelectedMsisdns() {
+		var selectedRecords = this.getAllSelectedCheckboxes();
+		var resultList = [];
+		for (var index = 0; index < selectedRecords.length; index ++) {
+			var currentItem = selectedRecords[index];
+			// Get the Respective TR Element.
+			var data = currentItem.parentElement.parentElement.data;
+			resultList.push(data.msisdn);
+		}
+		return resultList;
+	}
+
+	this.getSelectedMsisdns = getSelectedMsisdns.bind(this);
+
+	function removeRowFromTable(rowReference) {
+		if (rowReference.removeNode) {
+			rowReference.removeNode(true);
+		} else {
+			rowReference.remove && rowReference.remove();
+		}
+		if (this.getAllSelectedCheckboxes().length !== 0) {
+			this.showRemoveButton();
+		} else {
+			this.hideRemoveButton();
+		}
+	}
+
+	function hideRow(rowReference) {
+		rowReference.style.display = 'none';
+	}
+
+	function showRow(rowReference) {
+		rowReference.style.display='';
+	}
+
+	function hideExcludedItems() {
+		var tableBody = this.contentTableBody;
+		var childItems = tableBody.children;
+		var childLength = childItems.length;
+		for (var index = 0; index < childLength; index ++) {
+			var childItem = childItems[index];
+			var data = childItem.data;
+			if (this.excludedMsisdn.indexOf(data.msisdn) !== -1) {
+				hideRow(childItem);				
+			} else {
+				showRow(childItem);
+			}
+		}
+	}
+
+	this.hideExcludedItems = hideExcludedItems.bind(this);
+
+	this.removeRowFromTable = removeRowFromTable.bind(this);
+
 	this.refreshTableExcludes = refreshTableExcludes.bind(this);
 
-	function refreshUpdatedData() {
+	function refreshUpdatedData(removeExisting) {
 		var enteredData = [];
 		var tableBody = this.currentTable.tBodies[0];
 		var childElements = tableBody.children;
 		var childLength = childElements.length;
 		for (var index = 0; index < childLength; index ++) {
 			var childItem = childElements[index];
-			enteredData.push(childItem.data);
+			var childItemData = childItem.data;
+			if (this.data.indexOf(childItemData) === -1 && removeExisting) {
+				this.removeRowFromTable(childItem);
+				continue;
+			}
+			enteredData.push(childItemData);
 		}
 		// Iterate over current data to see if there is any record new or not.
 		var currentDataLength = this.data.length;
@@ -265,7 +320,7 @@ var Table = function (domElement, properties) {
 		var eventTarget = event.target;
 		var targetProp = eventTarget.header;
 		var resultArray = this.getDataToCompare(targetProp.toLowerCase());
-		console.log('The Result Array is ', resultArray);
+		console.debug('The Result Array is ', resultArray);
 		// Check if the Column is already sorted.
 		var sorted = eventTarget.sorted ? eventTarget.sorted : {};
 		var sortedOrder;
@@ -304,7 +359,7 @@ var Table = function (domElement, properties) {
 		} else {
 			resultArray.sort(descFunction);
 		}
-		console.log('The Sorted Result is ', resultArray);
+		console.debug('The Sorted Result is ', resultArray);
 		// alert('The Sorted Array is ' + JSON.stringify(result));
 		var totalLength = resultArray.length;
 		var tableBody = this.currentTable.tBodies[0];
@@ -322,7 +377,7 @@ var Table = function (domElement, properties) {
 			if (item.index !== eventTarget.index) {
 				delete item.sorted;
 				item.className = '';
-				console.log('The Item is not equals to eventTarget', item, eventTarget);
+				console.debug('The Item is not equals to eventTarget', item, eventTarget);
 			} else {
 				eventTarget.sorted = sortedOrder;
 				eventTarget.className = sortedOrder.classToAdd;
@@ -343,10 +398,10 @@ var Table = function (domElement, properties) {
 	// Create Head and Body.
 	this.tableHead = this.currentTable.createTHead();
 	// This is the body for the actual elements to render.
-	this.currentTable.createTBody();
+	this.contentTableBody = this.currentTable.createTBody();
 
 	// This is the body to render the Action Buttons in that.
-	this.currentTable.createTBody();
+	this.tableFootBody = this.currentTable.createTBody();
 
 	// The Caption to show the information.
 	this.currentTable.createCaption();
