@@ -40,6 +40,7 @@ var Table = function(domElement, properties){
 				tdElement.setAttribute('colspan', totalLength);
 				rowElement.append(tdElement);
 				var wrapperDiv = document.createElement('div');
+				wrapperDiv.className = 'd-flex';
 				var removeElementButton = document.createElement('button');
 				removeElementButton.className='btn btn-danger';
 				removeElementButton.type = 'button';
@@ -51,13 +52,16 @@ var Table = function(domElement, properties){
 				this.removeButtonReference = removeElementButton;
 				secondBody.append(rowElement);
 				this.removeButtonReference.addEventListener('click', this.removeSelectedItems);
-				for (var index = 0; index < totalLength; index ++) {
-					var thElement = document.createElement('th');
-					thElement.innerHTML = labels[index];
-					this.tableHeaders.push(labels[index].toLowerCase());
-					// Append the TH Element after the THead.
-					tableHead.append(thElement);
-				}
+			}
+			for (var index = 0; index < totalLength; index ++) {
+				var thElement = document.createElement('th');
+				thElement.innerHTML = labels[index];
+				thElement.header = labels[index].toLowerCase();
+				thElement.addEventListener('click', this.arrangeRowsPerHeader);
+				this.tableHeaders.push(thElement.header);
+				// Append the TH Element after the THead.
+				tableHead.append(thElement);
+				console.log('The Element has been bound with an event ', thElement);
 			}
 		}
 	}
@@ -86,6 +90,9 @@ var Table = function(domElement, properties){
 			for (var index = 0; index < totalLength; index ++) {
 					var tableRow = document.createElement('tr');
 					var dataRow = data[index];
+					this.data.push(dataRow);
+					// Using the data row to compare the respective values.
+					tableRow.data = dataRow;
 					var headLength = this.tableHeaders.length;
 					if (this.addCheckboxes) {
 						var localTdElement = document.createElement('td');
@@ -165,9 +172,42 @@ var Table = function(domElement, properties){
 	}
 	
 	this.removeSelectedItems = removeSelected.bind(this);
+
+	var getDataToCompare = function(headerValue){
+		var tbody = this.currentTable.tBodies[0];
+		var childElements = tbody.children;
+		var childrenLength = childElements.length;
+		var resultArray = [];
+		for (var index = 0; index < childrenLength; index ++) {
+			var item = childElements[index];
+			resultArray.push({
+				index: index,
+				valueToCompare: item.data[headerValue],
+				actualElement: item
+			});
+		}
+		return resultArray;
+	}
 	
-	var currentDOMElement = domElement;
-  var apiToCall = 'https://www.google.com';
+	this.getDataToCompare = getDataToCompare.bind(this);
+	
+	var arrangeRowsPerHeader = function(event){
+		var targetProp = event.target.header;
+		var resultArray = this.getDataToCompare(targetProp.toLowerCase());
+		console.log('The Result Array is ', resultArray);
+		resultArray.sort(function(first, second){return first.valueToCompare > second.valueToCompare})
+		var totalLength = resultArray.length;
+		var tableBody = this.currentTable.tBodies[0];
+		for (var index = 0; index < totalLength; index ++) {
+			var currentItem = resultArray[index];
+			if (index !== currentItem.index) {
+				tableBody.insertBefore(currentItem.actualElement, tableBody.children[index]);
+			}
+		}
+	}
+
+	this.arrangeRowsPerHeader = arrangeRowsPerHeader.bind(this);
+
 	var localProperties = properties ? properties : {};
   // The Current Table pointer to point to the DOM element.
 	this.currentTable = document.createElement('table');
@@ -187,7 +227,7 @@ var Table = function(domElement, properties){
 	// The Caption to show the information.
 	this.currentTable.createCaption();
 	// This function call will add the initial headers to the table.
-	this.tableHeaders = ['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh'];
+	this.tableHeaders = properties.headers ? properties.headers : ['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh'];
 	this.addHeaders(this.tableHeaders);
 	domElement.append(this.currentTable);
 	
@@ -196,8 +236,4 @@ var Table = function(domElement, properties){
 	
 	// The MSISDNS which are meant to be excluded from the list.
 	this.excludedMsisdn = [];
-	
-	this.callMe = function() {
-		console.log('Call Me Table ', this.currentTable);
-	}
 }

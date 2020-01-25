@@ -1,0 +1,23 @@
+<html lang="en">
+  <head>
+    <title>Sample Table Component</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="bootstram.min.css">
+    <script type="text/javascript" src="table-component-approach-refactor.js"></script>
+  </head>
+  <body>
+    Hi there.
+  </body>
+  <script>
+    var table = new Table(document.body, {addCheckboxes: true, className: 'table table-dark', headers: ['First', 'Second', 'Third', 'Fourth']});
+table.renderBodyInTheTable([{first:1, second:'Shiv 0', third: 10, fourth: 'Shiva'},
+{first:2, second:'Shiv 1', third: 100, fourth: 'Shakti'},
+{first:3, second:'Shiv 2', third: 101, fourth: 'Hari'},
+{first:4, second:'Shiv 3', third: 220, fourth: 'Har'},
+{first:5, second:'Shiv 4', third: 330, fourth: 'Mahadev'},
+{first:6, second:'Shiv 5', third: 215, fourth: 'SadaShiv'},
+{first:7, second:'Shiv 6', third: 90, fourth: 'Shiva'},
+{first:8, second:'Shiv 7', third: 500, fourth: 'Shiv'},
+{first:9, second:'Shiv 8', third: 1000, fourth: 'Parvati'}]);
+  </script>
+</html>
